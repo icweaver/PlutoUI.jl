@@ -127,6 +127,7 @@ begin
 	Base.@kwdef struct ConfirmBond
 		element::Any
 		secret_key::String=String(rand('a':'z', 10))
+		label::String
 	end
 
 	function Base.show(io::IO, m::MIME"text/html", cb::ConfirmBond)
@@ -136,7 +137,7 @@ begin
 		output = @htl(
 			"""<span style='display: contents;'>$(
 				cb.element
-			)<button id=$(cb.secret_key)>Confirm</button
+			)<button id=$(cb.secret_key)>$(cb.label)</button
 			><script id=$(cb.secret_key)>
 		
 		let key = $(cb.secret_key)
@@ -268,9 +269,10 @@ You can combine this with [`PlutoUI.combine`](@ref)!
 > ![screenshot of running the code above in pluto](https://user-images.githubusercontent.com/6933510/145614965-7a1e8630-4766-4589-8a84-b022bdfb09fc.gif)
 
 """
-function confirm(element::Any)
+function confirm(element::Any; label="Confirm")
 	ConfirmBond(;
 		element=element,
+		label=label,
 	)
 end
 
