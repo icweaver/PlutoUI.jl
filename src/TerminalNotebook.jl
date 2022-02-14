@@ -1,8 +1,18 @@
 ### A Pluto.jl notebook ###
-# v0.17.0
+# v0.17.7
 
 using Markdown
 using InteractiveUtils
+
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
+        el
+    end
+end
 
 # ╔═╡ 2da76520-1615-11ec-1ad7-8f93957b2e6e
 import IOCapture
@@ -87,10 +97,8 @@ function Base.show(io::IO, ::MIME"text/html", terminal_output::WithTerminalOutpu
 	show(io, MIME("text/html"), @htl("""
 		<div style="display: inline; white-space: normal;">
 			$(value_to_show)
-			
-			<script src="https://cdn.jsdelivr.net/npm/ansi_up@5.0.1/ansi_up.min.js"></script>
-			<script type="text/javascript">
-				var txt = $(terminal_output.output)
+			<script type="text/javascript" id="plutouiterminal">
+				let txt = $(terminal_output.output)
 
 				var container = html`
 					<pre
@@ -109,7 +117,13 @@ function Base.show(io::IO, ::MIME"text/html", terminal_output::WithTerminalOutpu
 						"
 					></pre>
 				`
-				container.innerHTML = AnsiUp.ansi_to_html(txt);
+				try {
+					const { default: AnsiUp } = await import("https://cdn.jsdelivr.net/gh/JuliaPluto/ansi_up@v5.1.0-es6/ansi_up.js");
+					container.innerHTML = new AnsiUp().ansi_to_html(txt);
+				} catch(e) {
+					console.error("Failed to import/call ansiup!", e)
+					container.innerText = txt
+				}
 				return container
 			</script>
 		</div>
@@ -172,9 +186,6 @@ function with_terminal(f, args...; color=true, show_value=true)
 	end
 end
 
-# ╔═╡ fe8c0c2f-8555-44f0-ae30-628ad4860157
-export with_terminal, @with_terminal
-
 # ╔═╡ bb087be9-fc7e-46a1-9ff3-2a5f97a27add
 function is_inside_pluto(m::Module)::Bool
 	if isdefined(m, :PlutoForceDisplay)
@@ -196,6 +207,7 @@ macro skip_as_script(ex) is_inside_pluto(__module__) ? esc(ex) : nothing end
 @skip_as_script begin
 	import Pkg
 	Pkg.activate("..")
+	Pkg.instantiate()
 end
 
 # ╔═╡ 376b7763-dd17-4147-a246-a530ace698ec
@@ -271,6 +283,9 @@ macro with_terminal(expr)
 	end
 end
 
+# ╔═╡ fe8c0c2f-8555-44f0-ae30-628ad4860157
+export with_terminal, @with_terminal
+
 # ╔═╡ 329d47a4-7ae1-49fb-9411-55cbc113195b
 @skip_as_script @with_terminal @info "Hey!"
 
@@ -286,7 +301,7 @@ end
 # ╟─6124c693-f752-4036-a011-b06300f61a6d
 # ╟─c98e0f1b-c489-48ed-b69e-5cbc06267429
 # ╠═bf684e0c-e0f2-452c-b9a4-8452233ff920
-# ╟─d416b336-a6ee-4059-93af-08b12d59defd
+# ╠═d416b336-a6ee-4059-93af-08b12d59defd
 # ╠═a0df0558-6b19-471d-b609-df3ee65dadbb
 # ╟─bb087be9-fc7e-46a1-9ff3-2a5f97a27add
 # ╟─0ffed232-19c8-47f1-af97-23989687ae6e
